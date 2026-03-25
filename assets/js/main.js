@@ -8,7 +8,6 @@ window.addEventListener('scroll', () => {
     const progressEl = document.getElementById('scroll-progress');
     if (progressEl) progressEl.style.width = percent + "%";
 
-    // Navbar Shadow logic
     const nav = document.getElementById('navbar');
     if (nav) {
         if (window.scrollY > 20) {
@@ -22,17 +21,35 @@ window.addEventListener('scroll', () => {
     }
 });
 
-// Wait for DOM and libraries
+// Detect Mobile for Payloads
+const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
 window.addEventListener('DOMContentLoaded', () => {
-    // 5. INICIALIZAR GSAP E SCROLLTRIGGER
     if (typeof gsap !== 'undefined') {
         gsap.registerPlugin(ScrollTrigger);
         initAnimations();
     }
+    
+    // Lazy Video Implementation (Saves ~4MB on load)
+    const lazyVideos = document.querySelectorAll('.main-video-lazy');
+    const videoObserver = new IntersectionObserver((entries) => {
+        entries.forEach(video => {
+            if (video.isIntersecting) {
+                const source = video.target.querySelector('source');
+                if (source && source.dataset.src) {
+                    source.src = source.dataset.src;
+                    video.target.load();
+                    video.target.play();
+                    videoObserver.unobserve(video.target);
+                    console.log("Video Lazy Loaded");
+                }
+            }
+        });
+    }, { threshold: 0.1 });
+    lazyVideos.forEach(v => videoObserver.observe(v));
 });
 
 function initAnimations() {
-    // 2. PARALLAX BLOBS (Second Fold)
     gsap.to(".animate-float-slow", {
         y: (i, t) => -window.innerHeight * 0.1,
         ease: "none",
@@ -44,13 +61,11 @@ function initAnimations() {
         }
     });
 
-    // 4. ACTIVATE MASK REVEAL
     setTimeout(() => {
         const heroContent = document.getElementById('hero-content');
         if (heroContent) heroContent.classList.add('reveal-active');
     }, 300);
 
-    // 3. ANIMAÇÕES DA INTERFACE
     const initElements = document.querySelectorAll('.init-hidden');
     gsap.to(initElements, {
         y: 0,
@@ -62,11 +77,12 @@ function initAnimations() {
         force3D: true
     });
 
-    // CANVAS SEQUENCES
+    // IMAGE SEQUENCE (CANVAS)
     const frameCount = 192;
     const images = [];
     const frameData = { index: 0 };
     const canvas = document.getElementById("hero-canvas");
+    
     if (canvas) {
         const ctx = canvas.getContext("2d");
 
@@ -77,18 +93,20 @@ function initAnimations() {
             images[i - 1] = img;
         }
 
-        // Segmented Preload
-        const criticalBatch = 20;
+        // MOBILE OPTIMIZATION: Load less initial frames
+        const criticalBatch = isMobile ? 8 : 25;
         for (let i = 1; i <= criticalBatch; i++) {
             loadFrame(i);
         }
 
         window.addEventListener('load', () => {
+            // Delay non-critical frames to boost LCP score
+            const loadDelay = isMobile ? 3000 : 1500; 
             setTimeout(() => {
                 for (let i = criticalBatch + 1; i <= frameCount; i++) {
-                    setTimeout(() => loadFrame(i), (i - criticalBatch) * 10);
+                    setTimeout(() => loadFrame(i), (i - criticalBatch) * 15);
                 }
-            }, 1000);
+            }, loadDelay);
         });
 
         if (images[0]) {
@@ -148,37 +166,27 @@ function initAnimations() {
         }
     });
 
-    // 6. GSAP STAGGER PARA OS ITENS DO FEED
     ScrollTrigger.create({
-        trigger: ".lg\\:col-span-5",
+        trigger: ".lg\\:col-span-12", // Bento container
         start: "top 85%",
         onEnter: () => {
             gsap.to(".stagger-item", {
                 y: 0,
                 opacity: 1,
                 duration: 0.8,
-                stagger: 0.15,
+                stagger: 0.1,
                 ease: "power3.out",
                 force3D: true
             });
         }
     });
 
-    // 8. ANIMAÇÃO DO CTA FINAL
     gsap.to("#cta-final", {
-        y: 0,
-        opacity: 1,
-        duration: 1.2,
-        ease: "power3.out",
-        force3D: true,
-        scrollTrigger: {
-            trigger: "#cta-final",
-            start: "top 90%",
-        }
+        y: 0, opacity: 1, duration: 1.2, ease: "power3.out", force3D: true,
+        scrollTrigger: { trigger: "#cta-final", start: "top 90%" }
     });
 }
 
-// 5. OBSERVERS
 const revealElements = document.querySelectorAll(".reveal-up");
 const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
@@ -189,52 +197,34 @@ const observer = new IntersectionObserver((entries) => {
 }, { threshold: 0.1, rootMargin: "0px" });
 revealElements.forEach(el => observer.observe(el));
 
-// 7. FLASHLIGHT & TILT
 window.updateFlashlight = function(e, card) {
     const rect = card.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
     card.style.setProperty('--mouse-x', `${x}px`);
     card.style.setProperty('--mouse-y', `${y}px`);
-
     if (typeof gsap !== 'undefined') {
         const centerX = rect.width / 2;
         const centerY = rect.height / 2;
-        const rotateX = (y - centerY) / 50;
-        const rotateY = (centerX - x) / 50;
-
-        gsap.to(card, {
-            rotateX: rotateX,
-            rotateY: rotateY,
-            duration: 0.5,
-            ease: "power2.out"
-        });
+        const rotateX = (y - centerY) / 60;
+        const rotateY = (centerX - x) / 60;
+        gsap.to(card, { rotateX, rotateY, duration: 0.5, ease: "power2.out" });
     }
 }
-
 document.querySelectorAll('.flashlight-card').forEach(card => {
     card.addEventListener('mouseleave', () => {
         if (typeof gsap !== 'undefined') gsap.to(card, { rotateX: 0, rotateY: 0, duration: 0.5 });
     });
 });
-
-// 9. MAGNETIC BUTTONS
 document.querySelectorAll('button.group, a.gemini-laser-button').forEach(btn => {
     btn.addEventListener('mousemove', (e) => {
         if (typeof gsap !== 'undefined') {
             const rect = btn.getBoundingClientRect();
             const x = e.clientX - rect.left - rect.width / 2;
             const y = e.clientY - rect.top - rect.height / 2;
-
-            gsap.to(btn, {
-                x: x * 0.2,
-                y: y * 0.2,
-                duration: 0.4,
-                ease: "power2.out"
-            });
+            gsap.to(btn, { x: x * 0.15, y: y * 0.15, duration: 0.4, ease: "power2.out" });
         }
     });
-
     btn.addEventListener('mouseleave', () => {
         if (typeof gsap !== 'undefined') gsap.to(btn, { x: 0, y: 0, duration: 0.6, ease: "elastic.out(1, 0.3)" });
     });

@@ -7,8 +7,9 @@
     <title>Artools Precision Pen</title>
 
     <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://code.iconify.design">
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@300;400;500;700&display=swap"
         rel="stylesheet">
@@ -20,7 +21,7 @@
     <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js" defer></script>
 
     <!-- PRELOAD HERO FRAMES (Critical Start in WebP) -->
-    <link rel="preload" as="image" href="assets/video_frames/frame_0001.webp">
+    <link rel="preload" as="image" href="assets/video_frames/frame_0001.webp" fetchpriority="high">
     <link rel="preload" as="image" href="assets/video_frames/frame_0002.webp">
     <link rel="preload" as="image" href="assets/video_frames/frame_0003.webp">
     <link rel="preload" as="image" href="assets/video_frames/frame_0004.webp">
@@ -61,6 +62,24 @@
             color: #1c1917;
             -webkit-font-smoothing: antialiased;
             overflow-x: hidden;
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Critical Header & LCP Priority */
+        #navbar {
+            display: flex;
+            opacity: 1;
+            transform: none;
+            visibility: visible;
+        }
+
+        /* Ensure LCP element is visible immediately */
+        .header-logo {
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 500;
+            font-size: 1.125rem;
+            display: inline-flex;
+            align-items: center;
         }
 
         /* TEXT OUTLINE */
@@ -345,7 +364,7 @@
         id="navbar">
         <div class="max-w-[1440px] mx-auto px-6 py-4 flex justify-between items-center">
             <!-- Esquerda: Logo -->
-            <div class="flex items-center gap-2 group cursor-pointer">
+            <div class="flex items-center gap-3 group header-logo">
                 <div
                     class="w-8 h-8 bg-stone-900 text-white flex items-center justify-center rounded-sm transition-transform duration-500 group-hover:rotate-90">
                     <iconify-icon icon="solar:pen-new-square-bold-duotone" class="text-xl"></iconify-icon>
@@ -959,8 +978,8 @@
         class="relative min-h-screen flex items-center justify-center overflow-hidden py-24 md:py-32 bg-[#EAEAE5] border-t border-stone-200">
         <!-- Background Video Imersivo (SEM BLUR BRANCO) -->
         <div class="absolute inset-0 z-0 scale-105">
-            <video autoplay muted loop playsinline loading="lazy" class="w-full h-full object-cover">
-                <source src="assets/raw_files/video.mp4" type="video/mp4">
+            <video autoplay muted loop playsinline class="w-full h-full object-cover main-video-lazy">
+                <source data-src="assets/raw_files/video.mp4" type="video/mp4">
             </video>
             <!-- Overlay Sutil para Profundidade (Tons Escuros para Dar Elegância) -->
             <div class="absolute inset-0 bg-black/40"></div>
