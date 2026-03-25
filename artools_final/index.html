@@ -1,0 +1,1300 @@
+<!DOCTYPE html>
+<html class="scroll-smooth" lang="pt-BR">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Artools Precision Pen</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@300;400;500;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Tailwind -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Iconify -->
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+
+    <!-- GSAP & ScrollTrigger -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+    <!-- Lenis Smooth Scroll -->
+    <script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.29/bundled/lenis.min.js"></script>
+
+    <!-- PRELOAD HERO FRAMES (Critical First Paint) -->
+    <link rel="preload" as="image" href="assets/video_frames/frame_0001.jpg">
+    <link rel="preload" as="image" href="assets/video_frames/frame_0002.jpg">
+    <link rel="preload" as="image" href="assets/video_frames/frame_0003.jpg">
+    <link rel="preload" as="image" href="assets/video_frames/frame_0004.jpg">
+    <link rel="preload" as="image" href="assets/video_frames/frame_0005.jpg">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                        display: ['Space Grotesk', 'sans-serif'],
+                    },
+                    colors: {
+                        stone: {
+                            50: '#fafaf9',
+                            100: '#f5f5f4',
+                            200: '#e7e5e4',
+                            300: '#d6d3d1',
+                            400: '#a8a29e',
+                            500: '#78716c',
+                            600: '#57534e',
+                            700: '#44403c',
+                            800: '#292524',
+                            900: '#1c1917',
+                        },
+                        'surface-light': '#EAEAE5',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #EAEAE5;
+            color: #1c1917;
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+        }
+
+        /* TEXT OUTLINE */
+        .text-outline {
+            -webkit-text-stroke: 1.5px #1c1917;
+            color: transparent;
+        }
+
+        /* NOISE Overlay */
+        .noise-overlay {
+            position: fixed;
+            inset: 0;
+            opacity: 0.05;
+            pointer-events: none;
+            z-index: 9999;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+        }
+
+        /* GRID PATTERN */
+        .bg-grid {
+            background-size: 40px 40px;
+            background-image:
+                linear-gradient(to right, rgba(0, 0, 0, 0.02) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(0, 0, 0, 0.02) 1px, transparent 1px);
+        }
+
+        /* SCROLL PROGRESS */
+        #scroll-progress {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 0%;
+            height: 3px;
+            background: linear-gradient(to right, #78716c, #1c1917);
+            z-index: 100;
+            transition: width 0.1s ease-out;
+        }
+
+        /* CUSTOM SCROLLBAR */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #EAEAE5;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #d6d3d1;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a8a29e;
+        }
+
+        /* Animações Flutuantes do Design System Vibe */
+        @keyframes floatSlow {
+
+            0%,
+            100% {
+                transform: translate(0, 0);
+            }
+
+            50% {
+                transform: translate(30px, -20px);
+            }
+        }
+
+        @keyframes floatReverse {
+
+            0%,
+            100% {
+                transform: translate(0, 0);
+            }
+
+            50% {
+                transform: translate(-30px, 20px);
+            }
+        }
+
+        .animate-float-slow {
+            animation: floatSlow 12s ease-in-out infinite;
+        }
+
+        .animate-float-reverse {
+            animation: floatReverse 15s ease-in-out infinite;
+        }
+
+        @keyframes spinBeam {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .animate-spin-beam {
+            animation: spinBeam 1.5s linear infinite;
+        }
+
+        /* FLASHLIGHT EFFECT DO DESIGN SYSTEM */
+        .flashlight-card {
+            position: relative;
+            background: #ffffff;
+            overflow: hidden;
+            z-index: 1;
+            will-change: transform;
+        }
+
+        .flashlight-card::before {
+            content: "";
+            position: absolute;
+            top: var(--mouse-y, -100px);
+            left: var(--mouse-x, -100px);
+            width: 800px;
+            height: 800px;
+            /* O gradiente imita um feixe de luz num ambiente claro, usando a cor base do design system */
+            background: radial-gradient(circle, rgba(234, 234, 229, 0.8) 0%, transparent 60%);
+            transform: translate(-50%, -50%);
+            transition: left 0.1s ease-out, top 0.1s ease-out;
+            pointer-events: none;
+            opacity: 0;
+            z-index: -1;
+        }
+
+        .flashlight-card:hover::before {
+            opacity: 1;
+        }
+
+        #hero-canvas {
+            will-change: transform;
+        }
+
+        @keyframes shimmer-btn {
+            from {
+                transform: translateX(-100%) skewX(-15deg);
+            }
+
+            to {
+                transform: translateX(200%) skewX(-15deg);
+            }
+        }
+
+        .animate-shimmer-btn {
+            animation: shimmer-btn 2s infinite;
+        }
+
+        .metallic-glass {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        @keyframes morph {
+
+            0%,
+            100% {
+                border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+            }
+
+            50% {
+                border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%;
+            }
+        }
+
+        .animate-morph {
+            animation: morph 8s ease-in-out infinite;
+        }
+
+        @keyframes draw {
+            to {
+                stroke-dashoffset: 0;
+            }
+        }
+
+        .animate-draw {
+            stroke-dasharray: 200;
+            stroke-dashoffset: 200;
+            animation: draw 2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes sheen {
+            0% {
+                transform: translateX(-100%) translateY(-100%) rotate(45deg);
+            }
+
+            100% {
+                transform: translateX(200%) translateY(200%) rotate(45deg);
+            }
+        }
+
+        .metallic-sheen {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, transparent 40%, rgba(255, 255, 255, 0.05) 45%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.05) 55%, transparent 60%);
+            z-index: 2;
+            pointer-events: none;
+            animation: sheen 10s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+        }
+
+        .mesh-gradient {
+            background:
+                radial-gradient(at 0% 0%, rgba(28, 25, 23, 0.08) 0, transparent 50%),
+                radial-gradient(at 100% 0%, rgba(168, 162, 158, 0.12) 0, transparent 50%),
+                radial-gradient(at 50% 100%, rgba(231, 229, 228, 0.4) 0, transparent 50%);
+        }
+
+        /* TEXT MASK REVEAL */
+        .text-mask {
+            overflow: hidden;
+            display: block;
+        }
+
+        .text-mask-content {
+            display: block;
+            transform: translateY(110%);
+            transition: transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .reveal-active .text-mask-content {
+            transform: translateY(0);
+        }
+
+        /* VERTICAL GRID LINES */
+        .grid-line {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 1px;
+            background: rgba(0, 0, 0, 0.03);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        @keyframes scroll-line {
+            0% {
+                transform: translateY(-100%);
+            }
+
+            100% {
+                transform: translateY(100%);
+            }
+        }
+
+        .animate-scroll-line {
+            animation: scroll-line 1.5s cubic-bezier(0.77, 0, 0.175, 1) infinite;
+        }
+
+        /* INITIAL REVEAL STATUS (JS will trigger animation) */
+        .init-hidden {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+    </style>
+</head>
+
+<body class="selection:bg-stone-800 selection:text-white">
+    <div class="noise-overlay"></div>
+    <div id="scroll-progress"></div>
+
+    <!-- GLOBAL GRID OVERLAY -->
+    <div class="fixed inset-0 pointer-events-none z-[5] max-w-[1440px] mx-auto overflow-hidden opacity-50">
+        <div class="grid-line left-[8.33%]"></div>
+        <div class="grid-line left-[16.66%]"></div>
+        <div class="grid-line left-[25%]"></div>
+        <div class="grid-line left-[33.33%]"></div>
+        <div class="grid-line left-[41.66%]"></div>
+        <div class="grid-line left-[50%]"></div>
+        <div class="grid-line left-[58.33%]"></div>
+        <div class="grid-line left-[66.66%]"></div>
+        <div class="grid-line left-[75%]"></div>
+        <div class="grid-line left-[83.33%]"></div>
+        <div class="grid-line left-[91.66%]"></div>
+    </div>
+
+    <!-- HEADER: Posição fixa no topo -->
+    <header
+        class="fixed top-0 left-0 w-full z-50 bg-[#EAEAE5]/60 backdrop-blur-md border-b border-stone-300/50 transition-all duration-300"
+        id="navbar">
+        <div class="max-w-[1440px] mx-auto px-6 py-4 flex justify-between items-center">
+            <!-- Esquerda: Logo -->
+            <div class="flex items-center gap-2 group cursor-pointer">
+                <div
+                    class="w-8 h-8 bg-stone-900 text-white flex items-center justify-center rounded-sm transition-transform duration-500 group-hover:rotate-90">
+                    <iconify-icon icon="solar:pen-new-square-bold-duotone" class="text-xl"></iconify-icon>
+                </div>
+                <span class="font-display font-medium tracking-tight text-lg">ARTOOLS<span
+                        class="text-stone-400">.PRO</span></span>
+            </div>
+
+            <!-- Centro: Links font-mono uppercase -->
+            <nav class="hidden md:flex gap-10 text-[11px] font-mono uppercase tracking-[0.2em] text-stone-600">
+                <a href="#" class="hover:text-stone-900 transition-colors">Design</a>
+                <a href="#" class="hover:text-stone-900 transition-colors">Technology</a>
+                <a href="#" class="hover:text-stone-900 transition-colors">Specs</a>
+            </nav>
+
+            <!-- Direita: Telefone (Substituiu Sacola) -->
+            <div class="flex items-center gap-4">
+                <a href="tel:31999999999"
+                    class="hidden sm:flex items-center gap-2 text-stone-900 font-mono text-xs font-bold tracking-widest hover:text-stone-500 transition-colors">
+                    <iconify-icon icon="solar:phone-bold-duotone" class="text-xl"></iconify-icon>
+                    (31) 99999-9999
+                </a>
+                <!-- Mobile only icon -->
+                <a href="tel:31999999999" class="sm:hidden text-stone-900">
+                    <iconify-icon icon="solar:phone-bold-duotone" class="text-2xl"></iconify-icon>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- TRILHO DO SCROLL (height: 600vh para esticar o scrollytelling e diminuir a velocidade dos frames) -->
+    <main class="hero-scrub relative h-[600vh] bg-grid">
+
+        <!-- CONTEÚDO PINANDO: sticky acompanha o rolamento até o fim do container -->
+        <div class="sticky top-0 h-screen w-full overflow-hidden flex items-center bg-stone-100">
+
+            <!-- MOTOR DO CANVAS (Imagem Sequência) -->
+            <canvas id="hero-canvas" width="1280" height="720"
+                class="absolute inset-0 w-full h-full object-cover z-0"></canvas>
+
+            <!-- SHEEN METÁLICO -->
+            <div class="metallic-sheen"></div>
+
+            <!-- LADO ESQUERDO: BLOCO DE CONTEÚDO -->
+            <div id="hero-content"
+                class="relative z-10 max-w-[1440px] w-full mx-auto px-6 md:px-24 pointer-events-none">
+                <div class="max-w-xl pointer-events-auto mt-12 md:mt-0">
+
+                    <!-- Badge -->
+                    <div
+                        class="init-hidden inline-flex items-center gap-3 mb-6 bg-white/40 backdrop-blur-sm px-4 py-1.5 rounded-full border border-stone-200">
+                        <span class="w-1.5 h-1.5 bg-stone-900 rounded-full animate-pulse"></span>
+                        <span
+                            class="text-[10px] font-mono uppercase tracking-[0.2em] text-stone-600 font-medium">Precision
+                            Series</span>
+                    </div>
+
+                    <!-- Headline Impactante com MASK REVEAL -->
+                    <h1
+                        class="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-[4.5rem] font-bold tracking-tighter leading-[1] mb-8">
+                        <span class="text-mask"><span class="text-mask-content text-stone-900">A caneta</span></span>
+                        <span class="text-mask"><span class="text-mask-content text-outline delay-100">mais
+                                tecnológica</span></span>
+                        <span class="text-mask"><span class="text-mask-content text-stone-900 delay-200">do
+                                mundo.</span></span>
+                    </h1>
+
+                    <!-- Parágrafo com Fade -->
+                    <p class="init-hidden text-lg text-stone-500 leading-relaxed mb-10 max-w-sm font-light delay-300">
+                        Redefinindo o limite entre a mente e o papel. Engenharia aeroespacial para um traço de controle
+                        e precisão absoluta.
+                    </p>
+                    <!-- Botões: Padronização Laser Beam Silver 2px -->
+                    <div class="flex flex-wrap gap-4 mt-8">
+                        <!-- Comprar Agora (LASER SILVER) -->
+                        <button
+                            class="init-hidden group relative z-10 flex items-center justify-center overflow-hidden rounded-full p-[2px] leading-none active:scale-95 transition-all shadow-xl hover:-translate-y-1">
+                            <span
+                                class="absolute inset-[-1000%] animate-spin-beam bg-[conic-gradient(from_0deg,transparent_0_315deg,#9ca3af_360deg)]"></span>
+                            <span
+                                class="relative flex h-full w-full items-center rounded-full bg-stone-900 pt-4 pr-8 pb-4 pl-8 ring-1 ring-white/10">
+                                <span
+                                    class="relative z-10 text-white text-[10px] md:text-xs font-bold tracking-[0.2em] uppercase flex items-center gap-2">
+                                    Comprar Agora
+                                    <iconify-icon icon="solar:arrow-right-linear"
+                                        class="text-base group-hover:translate-x-1 transition-transform"></iconify-icon>
+                                </span>
+                            </span>
+                        </button>
+
+                        <!-- Explorar (LASER SILVER SUBTLE) -->
+                        <button
+                            class="init-hidden group relative z-10 flex items-center justify-center overflow-hidden rounded-full p-[2px] leading-none active:scale-95 transition-all hover:-translate-y-1">
+                            <span
+                                class="absolute inset-[-1000%] animate-spin-beam bg-[conic-gradient(from_0deg,transparent_0_315deg,#9ca3af_360deg)] opacity-60 group-hover:opacity-100 transition-opacity"></span>
+                            <span
+                                class="relative flex h-full w-full items-center rounded-full bg-white pt-4 pr-8 pb-4 pl-8 border border-stone-200">
+                                <span
+                                    class="relative z-10 text-stone-900 text-[10px] md:text-xs font-bold tracking-[0.2em] uppercase flex items-center gap-2">
+                                    Explorar
+                                    <iconify-icon icon="solar:arrow-down-linear"
+                                        class="text-base group-hover:translate-y-1 transition-transform duration-300"></iconify-icon>
+                                </span>
+                            </span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- INDICADORES (LADO DIREITO E RODAPÉ) -->
+        <div id="hero-overlays" class="absolute inset-0 z-20 pointer-events-none">
+            <!-- Lado Direito: Marcador Vertical 01 -->
+            <div
+                class="absolute right-8 top-1/2 -translate-y-1/2 hidden md:flex flex-col items-center gap-6 mix-blend-difference text-stone-400">
+                <span class="text-xs font-mono">01</span>
+                <div class="w-px h-16 bg-stone-400/50"></div>
+            </div>
+
+            <!-- Rodapé: SCROLL TO CONTROL -->
+            <div class="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3">
+                <span
+                    class="text-[10px] font-mono uppercase tracking-[0.3em] text-stone-500 font-medium bg-white/20 px-2 py-1 rounded backdrop-blur-sm">Scroll
+                    to Control</span>
+                <div class="w-px h-10 bg-stone-300 overflow-hidden relative">
+                    <div class="absolute inset-0 w-full h-full bg-stone-900 animate-scroll-line"></div>
+                </div>
+            </div>
+        </div>
+
+        </div>
+    </main>
+
+    <!-- DIVISOR COM MARQUEE (Transição entre as Dobras) - PREMIUM VERSION -->
+    <div
+        class="relative z-40 border-t border-stone-300 bg-[#EAEAE5] py-6 md:py-8 overflow-hidden w-full shadow-[0_-10px_40px_rgba(0,0,0,0.05)]">
+        <style>
+            @keyframes marquee {
+                0% {
+                    transform: translateX(0);
+                }
+
+                100% {
+                    transform: translateX(-50%);
+                }
+            }
+
+            .animate-marquee {
+                display: flex;
+                width: max-content;
+                animation: marquee 25s linear infinite;
+            }
+        </style>
+        <div class="animate-marquee whitespace-nowrap items-center">
+            <span
+                class="mx-10 text-xl md:text-2xl font-display font-medium uppercase tracking-[0.1em] text-stone-900/10">Artools
+                Precision</span>
+            <iconify-icon icon="solar:star-fall-bold-duotone" class="mx-6 text-2xl text-stone-300"></iconify-icon>
+            <span
+                class="mx-10 text-xl md:text-2xl font-display font-medium uppercase tracking-[0.1em] text-stone-900/20 italic">Design
+                Estrutural</span>
+            <iconify-icon icon="solar:atom-bold-duotone" class="mx-6 text-2xl text-stone-300"></iconify-icon>
+            <span
+                class="mx-10 text-xl md:text-2xl font-display font-medium uppercase tracking-[0.1em] text-stone-900/10">Engenharia
+                de Elite</span>
+            <iconify-icon icon="solar:cpu-bold-duotone" class="mx-6 text-2xl text-stone-300"></iconify-icon>
+
+            <!-- Duplicado para loop infinito -->
+            <span
+                class="mx-10 text-xl md:text-2xl font-display font-medium uppercase tracking-[0.1em] text-stone-900/10">Artools
+                Precision</span>
+            <iconify-icon icon="solar:star-fall-bold-duotone" class="mx-6 text-2xl text-stone-300"></iconify-icon>
+            <span
+                class="mx-10 text-xl md:text-2xl font-display font-medium uppercase tracking-[0.1em] text-stone-900/20 italic">Design
+                Estrutural</span>
+            <iconify-icon icon="solar:atom-bold-duotone" class="mx-6 text-2xl text-stone-300"></iconify-icon>
+            <span
+                class="mx-10 text-xl md:text-2xl font-display font-medium uppercase tracking-[0.1em] text-stone-900/10">Engenharia
+                de Elite</span>
+            <iconify-icon icon="solar:cpu-bold-duotone" class="mx-6 text-2xl text-stone-300"></iconify-icon>
+        </div>
+    </div>
+
+    <!-- SEGUNDA DOBRA: Engenharia de Elite (Identidade Clean & Branca) -->
+    <section
+        class="min-h-[85vh] md:min-h-screen bg-[#EAEAE5] text-stone-900 py-12 md:py-16 px-6 md:px-12 lg:px-24 relative z-30 flex flex-col justify-center overflow-hidden font-sans">
+
+        <!-- Blobs Dinâmicos Inspirados no Design System Vibe -->
+        <div
+            class="absolute top-[-10%] right-[-10%] w-[600px] h-[600px] bg-gradient-to-br from-stone-200 to-transparent rounded-full blur-3xl animate-float-slow opacity-60 pointer-events-none z-0">
+        </div>
+        <div
+            class="absolute bottom-[10%] left-[10%] w-[500px] h-[500px] bg-gradient-to-tr from-white to-stone-400/30 rounded-full blur-3xl animate-float-reverse pointer-events-none z-0">
+        </div>
+        <!-- Noise original do Design System -->
+        <div class="absolute inset-0 opacity-[0.04] pointer-events-none mix-blend-multiply"
+            style="background-image: url('data:image/svg+xml,%3Csvg viewBox=\'0 0 200 200\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'n\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.65\' numOctaves=\'3\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23n)\'/%3E%3C/svg%3E'); z-index: 1;">
+        </div>
+
+        <div class="max-w-[1440px] mx-auto w-full relative z-10 pt-0">
+            <!-- HEADER -->
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 md:mb-12 gap-6">
+                <div class="max-w-2xl">
+                    <div
+                        class="reveal-up inline-flex items-center gap-3 mb-6 border border-stone-300 px-3 py-1.5 rounded-full bg-white/60 backdrop-blur-sm">
+                        <span
+                            class="w-1.5 h-1.5 bg-stone-800 rounded-full animate-pulse shadow-[0_0_8px_rgba(28,25,23,0.5)]"></span>
+                        <span
+                            class="text-[9px] font-mono uppercase tracking-[0.2em] text-stone-600 font-medium">Precision
+                            Tech</span>
+                    </div>
+
+                    <h2
+                        class="reveal-up font-display text-5xl md:text-7xl font-bold tracking-tighter mb-6 text-stone-900">
+                        Engenharia de <span class="font-serif italic text-stone-500 font-light">Elite</span>
+                    </h2>
+
+                    <p class="reveal-up text-stone-600 text-base md:text-lg font-light leading-relaxed max-w-xl">
+                        Uma biblioteca tecnológica guiada por sinais de precisão. O luxo invisível da escrita. Do chassi
+                        blindado à distribuição termodinâmica da tinta: <strong>passe o mouse nas
+                            especificações</strong> e acesse a telemetria do instrumento em tempo real.
+                    </p>
+                </div>
+
+                <a href="#"
+                    class="reveal-up group flex items-center gap-2 text-[10px] font-mono uppercase tracking-[0.2em] text-stone-500 hover:text-stone-900 transition-colors pb-2 border-b border-stone-300 hover:border-stone-900">
+                    Ver Especificações Técnicas
+                    <iconify-icon icon="solar:arrow-right-up-linear"
+                        class="text-base group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"></iconify-icon>
+                </a>
+            </div>
+
+            <!-- GRID PRINCIPAL (Restabelecendo as Duas Colunas da Estrutura original) -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 md:gap-10">
+
+                <!-- COLUNA ESQUERDA: Live Preview Card (Integração Total Pure Aesthetic) -->
+                <div
+                    class="reveal-up lg:col-span-7 bg-white border border-stone-200 rounded-[2rem] overflow-hidden relative flex flex-col justify-between min-h-[460px] group shadow-[0_10px_40px_-10px_rgba(0,0,0,0.05)] hover:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)] transition-shadow duration-700">
+
+                    <!-- Fundo Foto Original 100% Viva (Funde-se no Branco) -->
+                    <!-- A Mágica de CSS: Mascara a borda dura da base da foto para sumir no branco da div! -->
+                    <div class="absolute inset-x-0 top-0 h-[85%] z-0"
+                        style="-webkit-mask-image: linear-gradient(to bottom, black 50%, transparent 100%); mask-image: linear-gradient(to bottom, black 50%, transparent 100%);">
+                        <img src="assets/raw_files/IMG_6395 Grande.jpeg" alt="Tecnologia da Caneta"
+                            class="w-full h-full object-cover object-center group-hover:scale-[1.03] transition-transform duration-[3s] ease-out brightness-105 contrast-105">
+                    </div>
+
+                    <!-- Top Bar Esquerda: Adicionado bg branco fosco para garantir legibilidade 100% no topo da foto -->
+                    <div
+                        class="relative z-10 flex justify-between items-center w-full p-6 pt-8 font-mono text-[9px] uppercase tracking-[0.2em]">
+                        <div
+                            class="flex items-center gap-2 font-medium bg-white/70 backdrop-blur-md px-4 py-2 rounded-full shadow-sm text-stone-900 border border-white/50">
+                            <span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse shadow-sm"></span>
+                            Telemetria Óptica
+                        </div>
+                        <div
+                            class="flex items-center gap-3 hidden sm:flex bg-white/70 backdrop-blur-md px-4 py-2 rounded-full shadow-sm text-stone-600 border border-white/50">
+                            <span class="pr-3 border-r border-stone-300/50 font-medium">Precision Focus</span>
+                            <span>Módulo: <span class="font-bold text-stone-900">TKD-01</span></span>
+                        </div>
+                    </div>
+
+                    <!-- Conteúdo Inferior Esquerda em Branco Puro e Textos Escuros (Design System) -->
+                    <div
+                        class="relative z-10 w-full p-8 pt-0 mt-auto bg-gradient-to-t from-white via-white to-transparent">
+                        <h3
+                            class="font-display text-4xl md:text-5xl font-bold tracking-tight text-stone-900 mb-3 mix-blend-normal transform group-hover:translate-x-1 transition-transform duration-500 delay-100">
+                            Foco Arquitetural
+                        </h3>
+                        <p
+                            class="text-stone-500 text-sm md:text-[15px] font-light mb-6 max-w-md leading-relaxed mix-blend-normal">
+                            Uma lente sobre a conversão do traço orgânico. Chassis forjado a frio, texturas expostas em
+                            contraste dramático.
+                        </p>
+
+                        <!-- Mini Cards Inferiores (Stats no estilo Glassmorphism Claro do Design System) -->
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
+                            <div
+                                class="bg-stone-50/50 backdrop-blur-md border border-stone-200 shadow-sm rounded-xl p-4 flex flex-col justify-between hover:bg-white hover:border-stone-300 hover:shadow-lg hover:-translate-y-1 transition-all duration-500 group/card">
+                                <span
+                                    class="text-[9px] font-mono uppercase tracking-widest text-stone-400 mb-2 group-hover/card:text-stone-900 transition-colors">Atrito
+                                    Absoluto</span>
+                                <span class="text-xl md:text-2xl font-display font-medium text-stone-900">-38<span
+                                        class="text-[10px] font-sans text-stone-500 ml-1">%</span></span>
+                            </div>
+                            <div
+                                class="bg-stone-50/50 backdrop-blur-md border border-stone-200 shadow-sm rounded-xl p-4 flex flex-col justify-between hover:bg-white hover:border-stone-300 hover:shadow-lg hover:-translate-y-1 transition-all duration-500 group/card">
+                                <span
+                                    class="text-[9px] font-mono uppercase tracking-widest text-stone-400 mb-2 group-hover/card:text-stone-900 transition-colors">Peso
+                                    Estrutural</span>
+                                <span class="text-xl md:text-2xl font-display font-medium text-stone-900">32<span
+                                        class="text-[10px] font-sans text-stone-500 ml-1">g</span></span>
+                            </div>
+                            <div
+                                class="bg-stone-50/50 backdrop-blur-md border border-stone-200 shadow-sm rounded-xl p-4 flex flex-col justify-between hover:bg-white hover:border-stone-300 hover:shadow-lg hover:-translate-y-1 transition-all duration-500 group/card hidden md:flex">
+                                <span
+                                    class="text-[9px] font-mono uppercase tracking-widest text-stone-400 mb-2 group-hover/card:text-stone-900 transition-colors">Autonomia</span>
+                                <span class="text-xl md:text-2xl font-display font-medium text-stone-900">45<span
+                                        class="text-[10px] font-sans text-stone-500 ml-1">dias</span></span>
+                            </div>
+                        </div>
+                    </div>
+                </div> <!-- /FIM COLUNA ESQUERDA -->
+
+                <!-- COLUNA DIREITA: Tech/Case Feed (Dura 5 colunas) -->
+                <div
+                    class="reveal-up lg:col-span-5 bg-white border border-stone-200 rounded-3xl flex flex-col overflow-hidden shadow-xl relative">
+
+                    <!-- Top Bar Feed -->
+                    <div
+                        class="relative z-10 flex justify-between items-center p-8 border-b border-stone-200 font-mono text-[9px] uppercase tracking-[0.2em] text-stone-500 bg-stone-50">
+                        <div class="flex items-center gap-2">
+                            <!-- Removido cores azuis vibrantes por stone -->
+                            <span class="w-1.5 h-1.5 bg-stone-400 rounded-full"></span>
+                            Specs Feed
+                        </div>
+                        <span class="hover:text-stone-900 transition-colors cursor-default">Hover or click to
+                            lock</span>
+                    </div>
+
+                    <!-- Itens da Lista Direita -->
+                    <div class="flex-1 flex flex-col bg-white">
+
+                        <!-- Item 1 (Feed) -->
+                        <div
+                            class="stagger-item opacity-0 translate-y-8 group relative p-5 border-b border-stone-100 hover:bg-white hover:shadow-[0_10px_40px_-10px_rgba(0,0,0,0.05)] hover:scale-[1.01] hover:z-20 transition-all duration-500 cursor-default flex flex-col gap-2 rounded-xl mx-2 my-1">
+
+                            <div class="flex justify-between items-start">
+                                <div class="flex items-center gap-3">
+                                    <div
+                                        class="w-10 h-10 rounded-lg bg-gradient-to-br from-stone-100 to-stone-200 border border-stone-100 flex items-center justify-center text-stone-600 shadow-inner group-hover:text-stone-900 group-hover:scale-110 transition-all duration-500">
+                                        <iconify-icon icon="solar:cpu-bold-duotone" class="text-xl"></iconify-icon>
+                                    </div>
+                                    <div>
+                                        <h4
+                                            class="text-lg font-display font-semibold text-stone-800 group-hover:text-stone-900 transition-colors">
+                                            Chassi de Titânio</h4>
+                                        <span
+                                            class="font-mono text-[9px] uppercase tracking-widest text-stone-400">Hardware</span>
+                                    </div>
+                                </div>
+                                <div
+                                    class="w-8 h-8 rounded-full border border-stone-200 bg-white flex items-center justify-center text-stone-400 group-hover:bg-stone-900 group-hover:border-stone-900 group-hover:text-white transition-all duration-500 -rotate-45 group-hover:rotate-0 flex-shrink-0 shadow-sm">
+                                    <iconify-icon icon="solar:arrow-right-linear" class="text-sm"></iconify-icon>
+                                </div>
+                            </div>
+                            <p class="text-sm text-stone-500 font-light pl-14 pr-8 line-clamp-2">
+                                Estrutura monobloco forjada a frio. Resistente a riscos gravitacionais e polida.
+                            </p>
+                            <div
+                                class="flex gap-2 mt-1 pl-14 flex-wrap opacity-60 group-hover:opacity-100 transition-opacity duration-500">
+                                <span
+                                    class="px-2 py-0.5 border border-stone-200 rounded-full text-[9px] font-mono tracking-widest text-stone-500 bg-white shadow-sm">SINAL:
+                                    FORTE</span>
+                            </div>
+                        </div>
+
+                        <!-- Item 2 -->
+                        <div
+                            class="stagger-item opacity-0 translate-y-8 group relative p-5 border-b border-stone-100 hover:bg-white hover:shadow-[0_10px_40px_-10px_rgba(0,0,0,0.05)] hover:scale-[1.01] hover:z-20 transition-all duration-500 cursor-default flex flex-col gap-2 rounded-xl mx-2 my-1">
+
+                            <div class="flex justify-between items-start">
+                                <div class="flex items-center gap-3">
+                                    <div
+                                        class="w-10 h-10 rounded-lg bg-gradient-to-br from-stone-100 to-stone-200 border border-stone-100 flex items-center justify-center text-stone-600 shadow-inner group-hover:text-stone-900 group-hover:scale-110 transition-all duration-500">
+                                        <!-- CORRIGIDO ÍCONE: 'shield-keyhole-bold-duotone' é reconhecido oficialmente -->
+                                        <iconify-icon icon="solar:shield-keyhole-bold-duotone"
+                                            class="text-xl"></iconify-icon>
+                                    </div>
+                                    <div>
+                                        <h4
+                                            class="text-lg font-display font-semibold text-stone-800 group-hover:text-stone-900 transition-colors">
+                                            Sensor Tátil OS</h4>
+                                        <span
+                                            class="font-mono text-[9px] uppercase tracking-widest text-stone-400">Software</span>
+                                    </div>
+                                </div>
+                                <div
+                                    class="w-8 h-8 rounded-full border border-stone-200 bg-white flex items-center justify-center text-stone-400 group-hover:bg-stone-900 group-hover:border-stone-900 group-hover:text-white transition-all duration-500 -rotate-45 group-hover:rotate-0 flex-shrink-0 shadow-sm">
+                                    <iconify-icon icon="solar:arrow-right-linear" class="text-sm"></iconify-icon>
+                                </div>
+                            </div>
+                            <p class="text-sm text-stone-500 font-light pl-14 pr-8 line-clamp-2">
+                                Sensores de telemetria embutidos. O chip ativa e calibra o peso numérico assim que
+                                envolvido.
+                            </p>
+                            <div
+                                class="flex gap-2 mt-1 pl-14 flex-wrap opacity-60 group-hover:opacity-100 transition-opacity duration-500">
+                                <span
+                                    class="px-2 py-0.5 border border-stone-200 rounded-full text-[9px] font-mono tracking-widest text-stone-500 bg-white shadow-sm">LATÊNCIA:
+                                    0.1ms</span>
+                            </div>
+                        </div>
+
+                        <!-- Item 3 -->
+                        <div
+                            class="stagger-item opacity-0 translate-y-8 group relative p-5 hover:bg-white hover:shadow-[0_10px_40px_-10px_rgba(0,0,0,0.05)] hover:scale-[1.01] hover:z-20 transition-all duration-500 cursor-default flex flex-col gap-2 rounded-xl mx-2 my-1 border-transparent">
+
+                            <div class="flex justify-between items-start">
+                                <div class="flex items-center gap-3">
+                                    <div
+                                        class="w-10 h-10 rounded-lg bg-gradient-to-br from-stone-100 to-stone-200 border border-stone-100 flex items-center justify-center text-stone-600 shadow-inner group-hover:text-stone-900 group-hover:scale-110 transition-all duration-500">
+                                        <iconify-icon icon="solar:pipette-bold-duotone" class="text-xl"></iconify-icon>
+                                    </div>
+                                    <div>
+                                        <h4
+                                            class="text-lg font-display font-semibold text-stone-800 group-hover:text-stone-900 transition-colors">
+                                            Nano-Esferas</h4>
+                                        <span class="font-mono text-[9px] uppercase tracking-widest text-stone-400">Ink
+                                            Flow</span>
+                                    </div>
+                                </div>
+                                <div
+                                    class="w-8 h-8 rounded-full border border-stone-200 bg-white flex items-center justify-center text-stone-400 group-hover:bg-stone-900 group-hover:border-stone-900 group-hover:text-white transition-all duration-500 -rotate-45 group-hover:rotate-0 flex-shrink-0 shadow-sm">
+                                    <iconify-icon icon="solar:arrow-right-linear" class="text-sm"></iconify-icon>
+                                </div>
+                            </div>
+                            <p class="text-sm text-stone-500 font-light pl-14 pr-8 line-clamp-2">
+                                Controle quântico de fluxo na ponta. Secagem instantânea a vácuo autolimpante.
+                            </p>
+                        </div>
+                    </div>
+                </div> <!-- /FIM COLUNA DIREITA -->
+
+            </div>
+        </div>
+    </section>
+
+    <!-- TERCEIRA DOBRA: Aura Sync OS & Conversão (Bento Grid Pure Light Cinematic) -->
+    <section
+        class="min-h-screen bg-[#EAEAE5] text-stone-900 py-24 md:py-32 px-6 md:px-12 lg:px-24 relative z-40 overflow-hidden font-sans border-t border-stone-200">
+
+        <!-- Background Cinematic Texture (Titânio Stone 900) -->
+        <div class="absolute inset-0 z-0">
+            <img src="assets/artools_bg_variation.png" alt="Artools Texture"
+                class="w-full h-full object-cover opacity-[0.12] mix-blend-multiply">
+            <div class="absolute inset-0 bg-gradient-to-b from-[#EAEAE5] via-transparent to-[#EAEAE5]"></div>
+            <div class="metallic-sheen opacity-50"></div>
+        </div>
+
+        <!-- Gemini Blobs (Morphing) - Fluidez de Luz em Ambiente Escuro -->
+        <div
+            class="absolute top-[-10%] right-[-10%] w-[600px] h-[600px] bg-white rounded-full blur-[120px] animate-morph opacity-40 mix-blend-soft-light pointer-events-none">
+        </div>
+        <div class="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] bg-stone-300 rounded-full blur-[100px] animate-morph opacity-30 mix-blend-multiply pointer-events-none"
+            style="animation-delay: -3s;"></div>
+
+        <div class="max-w-[1440px] mx-auto w-full relative z-10">
+            <!-- HEADER DA SESSÃO -->
+            <div class="mb-16 md:mb-24 text-center flex flex-col items-center">
+                <span
+                    class="reveal-up inline-block px-4 py-1.5 bg-white/80 border border-stone-200 text-stone-500 rounded-full text-[10px] font-mono tracking-widest uppercase mb-4 shadow-sm backdrop-blur-sm">
+                    Aura Sync Protocol
+                </span>
+                <h2
+                    class="reveal-up text-4xl md:text-6xl font-display font-medium tracking-tight text-stone-900 mb-6 text-balance max-w-4xl">
+                    <span class="font-serif italic text-stone-500 font-light pr-2">Conectividade</span>Invisível
+                </h2>
+                <p class="reveal-up text-stone-600 text-base md:text-lg max-w-2xl font-light leading-relaxed">
+                    O traço analógico transformado em dado estruturado instantaneamente. Uma ponte fluida entre o papel
+                    e a malha digital.
+                </p>
+            </div>
+
+            <!-- BENTO GRID DO ECOSSISTEMA (Pure Light Style) -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 md:gap-10 auto-rows-fr">
+
+                <!-- Card Principal: App Sync (Esquerda - 7 cols) -->
+                <div class="reveal-up lg:col-span-7 flashlight-card !bg-white/90 rounded-[2rem] border border-stone-200 shadow-[0_15px_30px_-10px_rgba(28,25,23,0.1)] hover:shadow-[0_40px_80px_-40px_rgba(28,25,23,0.15)] transition-all duration-700 flex flex-col p-8 md:p-12 relative group"
+                    onmousemove="updateFlashlight(event, this)">
+                    <div
+                        class="absolute top-8 right-8 animate-spin-slow opacity-10 group-hover:opacity-40 transition-opacity duration-700 hidden sm:block">
+                        <iconify-icon icon="solar:synchronistic-minimalistic-bold-duotone"
+                            class="text-4xl text-stone-500"></iconify-icon>
+                    </div>
+                    <div class="mb-auto mt-2 md:mt-4 max-w-sm relative z-10">
+                        <div
+                            class="w-16 h-16 rounded-2xl bg-gradient-to-br from-stone-50 to-stone-100 border border-stone-100 mb-8 flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform duration-500">
+                            <iconify-icon icon="solar:devices-bold-duotone"
+                                class="text-3xl text-stone-500"></iconify-icon>
+                        </div>
+                        <h3
+                            class="text-3xl md:text-4xl font-display font-semibold tracking-tight text-stone-900 mb-4 group-hover:translate-x-2 transition-transform duration-500">
+                            Real-time Translate</h3>
+                        <p class="text-stone-500 font-light leading-relaxed">
+                            Desenhos livres em vetor. Textos em arquiteturas lógicas. Latência absoluta zero.
+                        </p>
+                    </div>
+                    <!-- Simulacro Visual do App Dark com SVG DRAW -->
+                    <div
+                        class="mt-12 bg-[#F9F9F8] border border-stone-200 rounded-xl p-4 md:p-6 flex flex-col sm:flex-row gap-4 overflow-hidden relative opacity-70 group-hover:opacity-100 transition-opacity duration-700">
+                        <!-- Traço Analógico -->
+                        <div
+                            class="flex-1 sm:border-r border-stone-200 sm:pr-4 flex flex-col items-center justify-center py-4 relative">
+                            <iconify-icon icon="solar:pen-bold-duotone" class="text-stone-400 mb-2"></iconify-icon>
+                            <span
+                                class="text-[9px] font-mono text-stone-400 font-semibold tracking-widest uppercase">Input
+                                Analógico</span>
+                            <svg class="mt-4 w-20 h-8" viewBox="0 0 100 40">
+                                <path d="M10 30 Q 30 10, 50 30 T 90 30" stroke="#1c1917" stroke-width="2" fill="none"
+                                    class="animate-draw" />
+                            </svg>
+                        </div>
+                        <!-- Dado Digital -->
+                        <div
+                            class="flex-1 sm:pl-4 flex flex-col items-center justify-center py-4 bg-white/60 rounded-lg backdrop-blur-sm relative border border-transparent group-hover:border-stone-200 transition-all duration-500">
+                            <iconify-icon icon="solar:code-file-bold-duotone"
+                                class="text-stone-600 mb-2"></iconify-icon>
+                            <span
+                                class="text-[9px] font-mono text-stone-400 font-semibold tracking-widest uppercase">Output
+                                Digital</span>
+                            <div
+                                class="mt-4 w-24 h-8 bg-white border border-stone-200 rounded flex items-center justify-center shadow-sm relative overflow-hidden group-hover:shadow transition-shadow">
+                                <div class="absolute inset-0 bg-stone-50/20"></div>
+                                <span class="text-[9px] font-mono text-stone-900 relative z-10 font-bold">{"Bezier":
+                                    2.5}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Painel Secundário Duplo (Direita - 5 Cols) -->
+                <div class="lg:col-span-5 flex flex-col gap-8 md:gap-10">
+
+                    <!-- Card Superior: Indução -->
+                    <div class="reveal-up flex-1 flashlight-card !bg-white/90 rounded-[2rem] border border-stone-200 shadow-[0_5px_20px_-10px_rgba(28,25,23,0.05)] hover:shadow-[0_25px_50px_-15px_rgba(28,25,23,0.1)] transition-all duration-700 p-8 md:p-10 flex flex-col justify-between group"
+                        onmousemove="updateFlashlight(event, this)">
+                        <div class="flex justify-between items-start mb-6">
+                            <div
+                                class="w-12 h-12 rounded-xl bg-gradient-to-br from-stone-50 to-stone-100 border border-stone-100 flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform duration-500 mt-2">
+                                <iconify-icon icon="solar:battery-charge-bold-duotone"
+                                    class="text-2xl text-stone-500"></iconify-icon>
+                            </div>
+                            <span
+                                class="px-3 py-1 bg-white/80 backdrop-blur-sm border border-stone-200 text-stone-500 rounded-full font-mono text-[9px] font-bold uppercase tracking-[0.2em]">Indução</span>
+                        </div>
+                        <div>
+                            <h3
+                                class="text-2xl md:text-3xl font-display font-semibold tracking-tight text-stone-900 mb-3 group-hover:translate-x-1 transition-transform">
+                                Repouso Dinâmico</h3>
+                            <p class="text-sm md:text-[15px] text-stone-500 font-light leading-relaxed">
+                                O case de titânio puríssimo funciona como berço magnético. 7 dias de escrita direta com
+                                uma única carga.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Card Inferior: Nuvem -->
+                    <div class="reveal-up flex-1 flashlight-card !bg-white/90 rounded-[2rem] border border-stone-200 shadow-[0_5px_20px_-10px_rgba(28,25,23,0.05)] hover:shadow-[0_25px_50px_-15px_rgba(28,25,23,0.1)] transition-all duration-700 p-8 md:p-10 flex flex-col justify-between group"
+                        onmousemove="updateFlashlight(event, this)">
+                        <div class="flex justify-between items-start mb-6">
+                            <div
+                                class="w-12 h-12 rounded-xl bg-gradient-to-br from-stone-50 to-stone-100 border border-stone-100 flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform duration-500 mt-2">
+                                <iconify-icon icon="solar:server-square-update-bold-duotone"
+                                    class="text-2xl text-stone-500"></iconify-icon>
+                            </div>
+                            <span
+                                class="px-3 py-1 bg-white/80 backdrop-blur-sm border border-stone-200 text-stone-500 rounded-full font-mono text-[9px] font-bold uppercase tracking-[0.2em]">AES-256</span>
+                        </div>
+                        <div>
+                            <h3
+                                class="text-2xl md:text-3xl font-display font-semibold tracking-tight text-stone-900 mb-3 group-hover:translate-x-1 transition-transform">
+                                Vault Criptográfico</h3>
+                            <p class="text-sm md:text-[15px] text-stone-500 font-light leading-relaxed">
+                                Cada traço assinado possui endpoint direto na nuvem exclusiva. Proteção total de
+                                propriedade intelectual.
+                            </p>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- CALL TO ACTION (CTA Frontal Pure Light) -->
+            <div class="mt-20 md:mt-32 text-center flex flex-col items-center opacity-0 translate-y-8 pb-10"
+                id="cta-final">
+                <span
+                    class="text-[10px] font-mono uppercase tracking-[0.3em] font-medium text-stone-400 mb-6 block">Reserva
+                    de Fundadores</span>
+                <button
+                    class="group relative px-10 py-5 bg-stone-900 text-white overflow-hidden rounded-full transition-all duration-500 hover:shadow-[0_20px_40px_-10px_rgba(28,25,23,0.5)] hover:-translate-y-1 active:scale-95">
+                    <div
+                        class="absolute inset-0 w-full h-full bg-stone-700 translate-y-full group-hover:translate-y-0 transition-transform duration-700 ease-out">
+                    </div>
+                    <span
+                        class="relative z-10 font-sans text-sm uppercase tracking-[0.15em] flex items-center gap-3 font-semibold">
+                        Pré-Encomende a Precision
+                        <span
+                            class="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-sm group-hover:bg-white text-white group-hover:text-stone-900 transition-colors duration-500">
+                            <iconify-icon icon="solar:arrow-right-linear"
+                                class="text-base group-hover:translate-x-0.5 transition-transform"></iconify-icon>
+                        </span>
+                    </span>
+                </button>
+                <div
+                    class="mt-8 flex items-center gap-4 text-[10px] uppercase tracking-[0.2em] font-mono text-stone-400">
+                    <span class="flex items-center gap-1.5"><iconify-icon icon="solar:box-minimalistic-linear"
+                            class="text-sm"></iconify-icon> Global Shipping</span>
+                    <span class="w-1 h-1 bg-stone-300 rounded-full"></span>
+                    <span class="flex items-center gap-1.5"><iconify-icon icon="solar:shield-check-linear"
+                            class="text-sm"></iconify-icon> 2 Years Warranty</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- QUARTA DOBRA: The Final Signature (Venda e Encerramento) -->
+    <section
+        class="relative min-h-screen flex items-center justify-center overflow-hidden py-24 md:py-32 bg-[#EAEAE5] border-t border-stone-200">
+        <!-- Background Video Imersivo (SEM BLUR BRANCO) -->
+        <div class="absolute inset-0 z-0 scale-105">
+            <video autoplay muted loop playsinline loading="lazy" class="w-full h-full object-cover">
+                <source src="assets/raw_files/video.mp4" type="video/mp4">
+            </video>
+            <!-- Overlay Sutil para Profundidade (Tons Escuros para Dar Elegância) -->
+            <div class="absolute inset-0 bg-black/40"></div>
+        </div>
+
+        <!-- Luxury Metallic Box (Pure Light Edition) -->
+        <div class="relative z-10 w-full max-w-2xl mx-auto px-6">
+            <div
+                class="reveal-up bg-white/80 rounded-[2rem] p-8 md:p-14 text-center backdrop-blur-2xl border border-stone-100 relative overflow-hidden group shadow-[0_30px_60px_-15px_rgba(28,25,23,0.1)]">
+                <!-- Efeito Radiante Interno -->
+                <div
+                    class="absolute -top-1/2 -left-1/2 w-full h-full bg-stone-100/10 blur-[120px] rounded-full pointer-events-none">
+                </div>
+
+                <span
+                    class="inline-block px-4 py-1.5 bg-stone-50 border border-stone-200 text-stone-500 rounded-full text-[9px] font-mono tracking-[0.3em] uppercase mb-6 relative z-10 shadow-sm">
+                    Artisan Engineering
+                </span>
+
+                <h2
+                    class="text-4xl md:text-6xl font-display font-bold tracking-tighter text-stone-900 mb-6 leading-[0.9] relative z-10">
+                    A sua <span class="font-serif italic text-stone-400 font-light">assinatura</span> no futuro.
+                </h2>
+
+                <p
+                    class="text-stone-500 text-sm md:text-base font-light leading-relaxed max-w-sm mx-auto mb-12 opacity-80 relative z-10">
+                    A Artools Precision não é apenas uma ferramenta; é a extensão definitiva da sua mente criativa.
+                    Construída em titânio, movida por inteligência.
+                </p>
+
+                <!-- Gemini 3 Authentic Shimmer Beam Button (PRATEADO METÁLICO - RECOVERY 2PX) -->
+                <div class="flex justify-center relative z-10 scale-100 md:scale-110 pt-2">
+                    <div class="group relative">
+                        <!-- Glow Background - Brilhante Sutil -->
+                        <div
+                            class="absolute -inset-4 bg-stone-300/5 group-hover:bg-stone-300/15 blur-2xl transition duration-500 rounded-full animate-pulse">
+                        </div>
+
+                        <!-- Pill Button (Gemini 03 RECOVERY) -->
+                        <button
+                            class="group relative z-10 flex items-center justify-center overflow-hidden rounded-full p-[2px] leading-none active:scale-95 transition-transform shadow-2xl">
+                            <!-- The Laser Beam (RECOVERY TECHNIQUE - 45 DEGREE WEDGE) -->
+                            <span
+                                class="absolute inset-[-1000%] animate-spin-beam bg-[conic-gradient(from_0deg,transparent_0_315deg,#9ca3af_360deg)]"></span>
+
+                            <span
+                                class="relative flex h-full w-full items-center rounded-full bg-stone-900 pt-4 pr-10 pb-4 pl-10 ring-1 ring-white/10">
+                                <!-- Inner Shimmer Overlay (Feedback no Hover) -->
+                                <span class="absolute inset-0 overflow-hidden rounded-full pointer-events-none">
+                                    <span
+                                        class="absolute top-0 left-0 h-full w-full -skew-x-12 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 group-hover:animate-shimmer-btn group-hover:opacity-100"></span>
+                                </span>
+
+                                <span class="relative z-10 flex items-center">
+                                    <span
+                                        class="text-[9px] md:text-[10px] font-bold tracking-[0.2em] uppercase text-white">RESERVE
+                                        A SUA PRECISION</span>
+                                </span>
+                                <span
+                                    class="relative z-10 ml-4 flex items-center text-stone-400 transition duration-300 group-hover:translate-x-1 group-hover:text-white">
+                                    <iconify-icon class="text-xl" icon="solar:arrow-right-bold-duotone"></iconify-icon>
+                                </span>
+                            </span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Info Final -->
+                <p class="mt-14 text-[9px] font-mono text-stone-400 uppercase tracking-widest opacity-60">
+                    Série Limitada para Fundadores • Disponível Globalmente
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- RODAPÉ MINIMALISTA (PADRÃO LP) -->
+    <footer class="bg-[#EAEAE5] py-12 px-6 md:px-12 lg:px-24 border-t border-stone-300 relative z-50">
+        <div class="max-w-[1440px] mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
+            <!-- Copyright & Credits -->
+            <div class="flex flex-col items-center md:items-start gap-2 text-center md:text-left">
+                <p class="text-[10px] font-mono text-stone-400 uppercase tracking-[0.2em]">
+                    © 2026 Artools. Todos os direitos reservados.
+                </p>
+                <p class="text-[10px] font-mono text-stone-500 uppercase tracking-[0.2em] font-bold">
+                    Desenvolvido por <span class="text-stone-900">Tekkadan GMD</span>
+                </p>
+            </div>
+
+            <!-- Links Legais -->
+            <div class="flex gap-10">
+                <a href="#"
+                    class="text-[10px] font-mono text-stone-400 uppercase tracking-[0.2em] hover:text-stone-900 transition-colors">Política
+                    de Privacidade</a>
+                <a href="#"
+                    class="text-[10px] font-mono text-stone-400 uppercase tracking-[0.2em] hover:text-stone-900 transition-colors">Termos
+                    de Serviço</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // 1. SCROLL PROGRESS
+        window.addEventListener('scroll', () => {
+            const h = document.documentElement,
+                b = document.body,
+                st = 'scrollTop',
+                sh = 'scrollHeight';
+            const percent = (h[st] || b[st]) / ((h[sh] || b[sh]) - h.clientHeight) * 100;
+            document.getElementById('scroll-progress').style.width = percent + "%";
+
+            // Navbar Shadow logic
+            const nav = document.getElementById('navbar');
+            if (window.scrollY > 20) {
+                nav.classList.add('shadow-[0_10px_30px_rgba(0,0,0,0.05)]');
+                nav.classList.remove('bg-[#EAEAE5]/60');
+                nav.classList.add('bg-[#EAEAE5]/90');
+            } else {
+                nav.classList.remove('shadow-[0_10px_30px_rgba(0,0,0,0.05)]', 'bg-[#EAEAE5]/90');
+                nav.classList.add('bg-[#EAEAE5]/60');
+            }
+        });
+
+        // 2. PARALLAX BLOBS (Second Fold)
+        gsap.to(".animate-float-slow", {
+            y: (i, t) => -window.innerHeight * 0.1,
+            ease: "none",
+            scrollTrigger: {
+                trigger: ".animate-float-slow",
+                start: "top bottom",
+                end: "bottom top",
+                scrub: 2
+            }
+        });
+
+        // 4. ACTIVATE MASK REVEAL ON LOAD
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                document.getElementById('hero-content').classList.add('reveal-active');
+            }, 300);
+        });
+
+        // 5. INICIALIZAR GSAP E SCROLLTRIGGER
+        gsap.registerPlugin(ScrollTrigger);
+
+        // 2. SETUP DO CANVAS E IMAGENS
+        const canvas = document.getElementById("hero-canvas");
+        const ctx = canvas.getContext("2d");
+
+        // Extraimos 180 frames com o script Python
+        const frameCount = 180;
+        const images = [];
+
+        // Objeto virtual para GSAP animar e aplicar o LERP suave
+        const frameData = { index: 0 };
+
+        // FASE 1: PRELOAD DAS IMAGENS (Idêntico ao arquivo referência)
+        function preloadImages() {
+            for (let i = 1; i <= frameCount; i++) {
+                const img = new Image();
+                const zeroPaddedNum = i.toString().padStart(4, '0');
+                img.src = `assets/video_frames/frame_${zeroPaddedNum}.jpg`;
+                images.push(img);
+            }
+        }
+
+        preloadImages();
+
+        // Renderiza apenas o 1º frame assim que o load for completado
+        if (images[0]) {
+            images[0].onload = renderFrame;
+        }
+
+        // Desenha a imagem correspondente ao índice `frameData.index`
+        // Otimizado: remove clearRect se a imagem for opaca e preencher o canvas
+        function renderFrame() {
+            const index = Math.floor(frameData.index);
+            const img = images[index];
+
+            if (img && img.complete) {
+                // Para JPEGs opacos de tela cheia, desenhar por cima é mais rápido que limpar
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            }
+        }
+
+        // 3. ANIMAÇÕES DA INTERFACE (GSAP + ScrollTrigger)
+
+        // FASE 4 (A): Entrada suave dos Textos e Botões na dobra inicial
+        const initElements = document.querySelectorAll('.init-hidden');
+        gsap.to(initElements, {
+            y: 0,
+            opacity: 1,
+            stagger: 0.1,
+            duration: 1.2,
+            ease: "power3.out",
+            delay: 0.2,
+            force3D: true // Hardware Acceleration
+        });
+
+        // FASE 2: Mapear o progresso do ScrollTrigger
+        gsap.to(frameData, {
+            index: frameCount - 1,
+            ease: "none", // Linear scrub
+            scrollTrigger: {
+                trigger: ".hero-scrub",
+                start: "top top",
+                end: "bottom bottom",
+                scrub: 0, // Instant response idêntico à referência
+                onUpdate: () => {
+                    requestAnimationFrame(renderFrame);
+                }
+            }
+        });
+
+        // FASE 4 (B): Fade out com Blur do Bloco de Texto Principal
+        gsap.to("#hero-content", {
+            y: -50,
+            opacity: 0,
+            filter: "blur(12px)", // blur transition para um feeling mais orgânico
+            scrollTrigger: {
+                trigger: ".hero-scrub",
+                start: "10% top", // Começa um pouco depois do usuário iniciar a rolagem
+                end: "30% top",
+                scrub: 1.5 // scrub nativo do gsap para amassar os números com suavidade
+            }
+        });
+
+        // Remover Overlays Menores antes para limpar o palco para a caneta
+        gsap.to("#hero-overlays", {
+            opacity: 0,
+            y: 30,
+            scrollTrigger: {
+                trigger: ".hero-scrub",
+                start: "5% top",
+                end: "15% top",
+                scrub: true
+            }
+        });
+        // 5. OBSERVERS PARA ENTRADA DOS ELEMENTOS (FADE / Y-OFFSET)
+        const revealElements = document.querySelectorAll(".reveal-up");
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add("visible");
+                }
+            });
+        }, { threshold: 0.1, rootMargin: "0px" });
+
+        revealElements.forEach(el => observer.observe(el));
+
+        // 6. GSAP STAGGER PARA OS ITENS DO FEED (COLUNA DIREITA)
+        ScrollTrigger.create({
+            trigger: ".lg\\:col-span-5", // o container da coluna direita
+            start: "top 85%", // Inicia quando o topo da coluna direita atingir 85% do viewport
+            onEnter: () => {
+                gsap.to(".stagger-item", {
+                    y: 0,
+                    opacity: 1,
+                    duration: 0.8,
+                    stagger: 0.15,
+                    ease: "power3.out",
+                    force3D: true
+                });
+            }
+        });
+
+        // 7. FLASHLIGHT & TILT EFFECT LOGIC
+        function updateFlashlight(e, card) {
+            const rect = card.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            card.style.setProperty('--mouse-x', `${x}px`);
+            card.style.setProperty('--mouse-y', `${y}px`);
+
+            // Suble Tilt
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+            const rotateX = (y - centerY) / 50;
+            const rotateY = (centerX - x) / 50;
+
+            gsap.to(card, {
+                rotateX: rotateX,
+                rotateY: rotateY,
+                duration: 0.5,
+                ease: "power2.out"
+            });
+        }
+
+        // Reset tilt on leave
+        document.querySelectorAll('.flashlight-card').forEach(card => {
+            card.addEventListener('mouseleave', () => {
+                gsap.to(card, { rotateX: 0, rotateY: 0, duration: 0.5 });
+            });
+        });
+
+        // 8. ANIMAÇÃO DO CTA FINAL
+        gsap.to("#cta-final", {
+            y: 0,
+            opacity: 1,
+            duration: 1.2,
+            ease: "power3.out",
+            force3D: true,
+            scrollTrigger: {
+                trigger: "#cta-final",
+                start: "top 90%",
+            }
+        });
+
+        // 9. MAGNETIC BUTTONS LOGIC
+        document.querySelectorAll('button.group, a.gemini-laser-button').forEach(btn => {
+            btn.addEventListener('mousemove', (e) => {
+                const rect = btn.getBoundingClientRect();
+                const x = e.clientX - rect.left - rect.width / 2;
+                const y = e.clientY - rect.top - rect.height / 2;
+
+                gsap.to(btn, {
+                    x: x * 0.2,
+                    y: y * 0.2,
+                    duration: 0.4,
+                    ease: "power2.out"
+                });
+            });
+
+            btn.addEventListener('mouseleave', () => {
+                gsap.to(btn, { x: 0, y: 0, duration: 0.6, ease: "elastic.out(1, 0.3)" });
+            });
+        });
+
+    </script>
+</body>
+
+</html>
