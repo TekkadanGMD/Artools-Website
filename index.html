@@ -16,22 +16,15 @@
     <!-- Tailwind -->
     <script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- Iconify -->
-    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <!-- Final CDNs - Optimized -->
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js" defer></script>
 
-    <!-- GSAP & ScrollTrigger -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
-
-    <!-- Lenis Smooth Scroll -->
-    <script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.29/bundled/lenis.min.js"></script>
-
-    <!-- PRELOAD HERO FRAMES (Critical First Paint) -->
-    <link rel="preload" as="image" href="assets/video_frames/frame_0001.jpg">
-    <link rel="preload" as="image" href="assets/video_frames/frame_0002.jpg">
-    <link rel="preload" as="image" href="assets/video_frames/frame_0003.jpg">
-    <link rel="preload" as="image" href="assets/video_frames/frame_0004.jpg">
-    <link rel="preload" as="image" href="assets/video_frames/frame_0005.jpg">
+    <!-- PRELOAD HERO FRAMES (Critical Start in WebP) -->
+    <link rel="preload" as="image" href="assets/video_frames/frame_0001.webp">
+    <link rel="preload" as="image" href="assets/video_frames/frame_0002.webp">
+    <link rel="preload" as="image" href="assets/video_frames/frame_0003.webp">
+    <link rel="preload" as="image" href="assets/video_frames/frame_0004.webp">
+    <link rel="preload" as="image" href="assets/video_frames/frame_0005.webp">
 
     <script>
         tailwind.config = {
@@ -596,8 +589,9 @@
                     <!-- A Mágica de CSS: Mascara a borda dura da base da foto para sumir no branco da div! -->
                     <div class="absolute inset-x-0 top-0 h-[85%] z-0"
                         style="-webkit-mask-image: linear-gradient(to bottom, black 50%, transparent 100%); mask-image: linear-gradient(to bottom, black 50%, transparent 100%);">
-                        <img src="assets/raw_files/IMG_6395 Grande.jpeg" alt="Tecnologia da Caneta"
-                            class="w-full h-full object-cover object-center group-hover:scale-[1.03] transition-transform duration-[3s] ease-out brightness-105 contrast-105">
+                        <img src="assets/raw_files/IMG_6395%20Grande.webp" alt="Tecnologia da Caneta"
+                            class="w-full h-full object-cover object-center group-hover:scale-[1.03] transition-transform duration-[3s] ease-out brightness-105 contrast-105"
+                            loading="lazy" width="800" height="600">
                     </div>
 
                     <!-- Top Bar Esquerda: Adicionado bg branco fosco para garantir legibilidade 100% no topo da foto -->
@@ -787,7 +781,7 @@
 
         <!-- Background Cinematic Texture (Titânio Stone 900) -->
         <div class="absolute inset-0 z-0">
-            <img src="assets/artools_bg_variation.png" alt="Artools Texture"
+            <img src="assets/artools_bg_variation.webp" alt="Artools Texture"
                 class="w-full h-full object-cover opacity-[0.12] mix-blend-multiply">
             <div class="absolute inset-0 bg-gradient-to-b from-[#EAEAE5] via-transparent to-[#EAEAE5]"></div>
             <div class="metallic-sheen opacity-50"></div>
@@ -1067,234 +1061,13 @@
         </div>
     </footer>
 
-    <script>
-        // 1. SCROLL PROGRESS
-        window.addEventListener('scroll', () => {
-            const h = document.documentElement,
-                b = document.body,
-                st = 'scrollTop',
-                sh = 'scrollHeight';
-            const percent = (h[st] || b[st]) / ((h[sh] || b[sh]) - h.clientHeight) * 100;
-            document.getElementById('scroll-progress').style.width = percent + "%";
+    <!-- Core Animation Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.29/bundled/lenis.min.js" defer></script>
 
-            // Navbar Shadow logic
-            const nav = document.getElementById('navbar');
-            if (window.scrollY > 20) {
-                nav.classList.add('shadow-[0_10px_30px_rgba(0,0,0,0.05)]');
-                nav.classList.remove('bg-[#EAEAE5]/60');
-                nav.classList.add('bg-[#EAEAE5]/90');
-            } else {
-                nav.classList.remove('shadow-[0_10px_30px_rgba(0,0,0,0.05)]', 'bg-[#EAEAE5]/90');
-                nav.classList.add('bg-[#EAEAE5]/60');
-            }
-        });
-
-        // 2. PARALLAX BLOBS (Second Fold)
-        gsap.to(".animate-float-slow", {
-            y: (i, t) => -window.innerHeight * 0.1,
-            ease: "none",
-            scrollTrigger: {
-                trigger: ".animate-float-slow",
-                start: "top bottom",
-                end: "bottom top",
-                scrub: 2
-            }
-        });
-
-        // 4. ACTIVATE MASK REVEAL ON LOAD
-        window.addEventListener('load', () => {
-            setTimeout(() => {
-                document.getElementById('hero-content').classList.add('reveal-active');
-            }, 300);
-        });
-
-        // 5. INICIALIZAR GSAP E SCROLLTRIGGER
-        gsap.registerPlugin(ScrollTrigger);
-
-        // 2. SETUP DO CANVAS E IMAGENS
-        const canvas = document.getElementById("hero-canvas");
-        const ctx = canvas.getContext("2d");
-
-        // Extraimos 180 frames com o script Python
-        const frameCount = 180;
-        const images = [];
-
-        // Objeto virtual para GSAP animar e aplicar o LERP suave
-        const frameData = { index: 0 };
-
-        // FASE 1: PRELOAD DAS IMAGENS (Idêntico ao arquivo referência)
-        function preloadImages() {
-            for (let i = 1; i <= frameCount; i++) {
-                const img = new Image();
-                const zeroPaddedNum = i.toString().padStart(4, '0');
-                img.src = `assets/video_frames/frame_${zeroPaddedNum}.jpg`;
-                images.push(img);
-            }
-        }
-
-        preloadImages();
-
-        // Renderiza apenas o 1º frame assim que o load for completado
-        if (images[0]) {
-            images[0].onload = renderFrame;
-        }
-
-        // Desenha a imagem correspondente ao índice `frameData.index`
-        // Otimizado: remove clearRect se a imagem for opaca e preencher o canvas
-        function renderFrame() {
-            const index = Math.floor(frameData.index);
-            const img = images[index];
-
-            if (img && img.complete) {
-                // Para JPEGs opacos de tela cheia, desenhar por cima é mais rápido que limpar
-                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-            }
-        }
-
-        // 3. ANIMAÇÕES DA INTERFACE (GSAP + ScrollTrigger)
-
-        // FASE 4 (A): Entrada suave dos Textos e Botões na dobra inicial
-        const initElements = document.querySelectorAll('.init-hidden');
-        gsap.to(initElements, {
-            y: 0,
-            opacity: 1,
-            stagger: 0.1,
-            duration: 1.2,
-            ease: "power3.out",
-            delay: 0.2,
-            force3D: true // Hardware Acceleration
-        });
-
-        // FASE 2: Mapear o progresso do ScrollTrigger
-        gsap.to(frameData, {
-            index: frameCount - 1,
-            ease: "none", // Linear scrub
-            scrollTrigger: {
-                trigger: ".hero-scrub",
-                start: "top top",
-                end: "bottom bottom",
-                scrub: 0, // Instant response idêntico à referência
-                onUpdate: () => {
-                    requestAnimationFrame(renderFrame);
-                }
-            }
-        });
-
-        // FASE 4 (B): Fade out com Blur do Bloco de Texto Principal
-        gsap.to("#hero-content", {
-            y: -50,
-            opacity: 0,
-            filter: "blur(12px)", // blur transition para um feeling mais orgânico
-            scrollTrigger: {
-                trigger: ".hero-scrub",
-                start: "10% top", // Começa um pouco depois do usuário iniciar a rolagem
-                end: "30% top",
-                scrub: 1.5 // scrub nativo do gsap para amassar os números com suavidade
-            }
-        });
-
-        // Remover Overlays Menores antes para limpar o palco para a caneta
-        gsap.to("#hero-overlays", {
-            opacity: 0,
-            y: 30,
-            scrollTrigger: {
-                trigger: ".hero-scrub",
-                start: "5% top",
-                end: "15% top",
-                scrub: true
-            }
-        });
-        // 5. OBSERVERS PARA ENTRADA DOS ELEMENTOS (FADE / Y-OFFSET)
-        const revealElements = document.querySelectorAll(".reveal-up");
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add("visible");
-                }
-            });
-        }, { threshold: 0.1, rootMargin: "0px" });
-
-        revealElements.forEach(el => observer.observe(el));
-
-        // 6. GSAP STAGGER PARA OS ITENS DO FEED (COLUNA DIREITA)
-        ScrollTrigger.create({
-            trigger: ".lg\\:col-span-5", // o container da coluna direita
-            start: "top 85%", // Inicia quando o topo da coluna direita atingir 85% do viewport
-            onEnter: () => {
-                gsap.to(".stagger-item", {
-                    y: 0,
-                    opacity: 1,
-                    duration: 0.8,
-                    stagger: 0.15,
-                    ease: "power3.out",
-                    force3D: true
-                });
-            }
-        });
-
-        // 7. FLASHLIGHT & TILT EFFECT LOGIC
-        function updateFlashlight(e, card) {
-            const rect = card.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-            card.style.setProperty('--mouse-x', `${x}px`);
-            card.style.setProperty('--mouse-y', `${y}px`);
-
-            // Suble Tilt
-            const centerX = rect.width / 2;
-            const centerY = rect.height / 2;
-            const rotateX = (y - centerY) / 50;
-            const rotateY = (centerX - x) / 50;
-
-            gsap.to(card, {
-                rotateX: rotateX,
-                rotateY: rotateY,
-                duration: 0.5,
-                ease: "power2.out"
-            });
-        }
-
-        // Reset tilt on leave
-        document.querySelectorAll('.flashlight-card').forEach(card => {
-            card.addEventListener('mouseleave', () => {
-                gsap.to(card, { rotateX: 0, rotateY: 0, duration: 0.5 });
-            });
-        });
-
-        // 8. ANIMAÇÃO DO CTA FINAL
-        gsap.to("#cta-final", {
-            y: 0,
-            opacity: 1,
-            duration: 1.2,
-            ease: "power3.out",
-            force3D: true,
-            scrollTrigger: {
-                trigger: "#cta-final",
-                start: "top 90%",
-            }
-        });
-
-        // 9. MAGNETIC BUTTONS LOGIC
-        document.querySelectorAll('button.group, a.gemini-laser-button').forEach(btn => {
-            btn.addEventListener('mousemove', (e) => {
-                const rect = btn.getBoundingClientRect();
-                const x = e.clientX - rect.left - rect.width / 2;
-                const y = e.clientY - rect.top - rect.height / 2;
-
-                gsap.to(btn, {
-                    x: x * 0.2,
-                    y: y * 0.2,
-                    duration: 0.4,
-                    ease: "power2.out"
-                });
-            });
-
-            btn.addEventListener('mouseleave', () => {
-                gsap.to(btn, { x: 0, y: 0, duration: 0.6, ease: "elastic.out(1, 0.3)" });
-            });
-        });
-
-    </script>
+    <!-- App Logic -->
+    <script src="assets/js/main.js" defer></script>
 </body>
 
 </html>
